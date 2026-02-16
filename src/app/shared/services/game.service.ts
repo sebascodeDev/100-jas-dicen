@@ -6,10 +6,55 @@ import { DataService } from './data.service';
   providedIn: 'root'
 })
 export class GameService {
+  private readonly STORAGE_KEY = '100jas_current_game';
   private currentGameSignal = signal<GameSession | null>(null);
   currentGame = this.currentGameSignal.asReadonly();
 
-  constructor(private dataService: DataService) {}
+  constructor(private dataService: DataService) {
+    // Cargar juego guardado si existe
+    this.loadGame();
+
+    // Escuchar cambios de otras ventanas
+    if (typeof window !== 'undefined') {
+      window.addEventListener('storage', (event) => {
+        if (event.key === this.STORAGE_KEY && event.newValue) {
+          try {
+            const game = JSON.parse(event.newValue) as GameSession;
+            this.currentGameSignal.set(game);
+          } catch (e) {
+            console.error('Error loading game from storage:', e);
+          }
+        }
+      });
+    }
+  }
+
+  private loadGame(): void {
+    if (typeof window === 'undefined') return;
+
+    const stored = localStorage.getItem(this.STORAGE_KEY);
+    if (stored) {
+      try {
+        const game = JSON.parse(stored) as GameSession;
+        this.currentGameSignal.set(game);
+      } catch (e) {
+        console.error('Error loading game:', e);
+      }
+    }
+  }
+
+  private saveGame(): void {
+    if (typeof window === 'undefined') return;
+
+    const game = this.currentGameSignal();
+    if (game) {
+      try {
+        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(game));
+      } catch (e) {
+        console.error('Error saving game:', e);
+      }
+    }
+  }
 
   // Iniciar nuevo juego
   startGame(teamIds: string[], questionCount: number = 5): GameSession | null {
@@ -47,6 +92,7 @@ export class GameService {
     };
 
     this.currentGameSignal.set(gameSession);
+    this.saveGame();
     return gameSession;
   }
 
@@ -108,7 +154,18 @@ export class GameService {
       consecutiveCorrect: 0 // Resetear racha al fallar
     } : g);
 
+    this.saveGame();
     return maxErrorsReached; // Retorna true si se alcanzó el máximo de errores
+  }
+
+  // Obtener penalización por error
+  getErrorPenalty(): number {
+    const game = this.currentGameSignal();
+    if (!game) return 0;
+
+    // Penalización progresiva: 5, 10, 15 puntos
+    const errorCount = game.errorsCount;
+    return errorCount === 0 ? 5 : errorCount * 5;
   }
 
   // Registrar respuesta correcta (para racha)
@@ -120,6 +177,7 @@ export class GameService {
         consecutiveCorrect: game.consecutiveCorrect + 1
       };
     });
+    this.saveGame();
   }
 
   // Añadir puntos a un equipo
@@ -138,6 +196,7 @@ export class GameService {
         )
       };
     });
+    this.saveGame();
   }
 
   // Siguiente pregunta
@@ -161,6 +220,7 @@ export class GameService {
       perfectQuestions: wasPerfect ? g.perfectQuestions + 1 : g.perfectQuestions
     } : g);
 
+    this.saveGame();
     return true;
   }
 
@@ -184,11 +244,16 @@ export class GameService {
       status: 'finished',
       endedAt: new Date()
     } : g);
+
+    this.saveGame();
   }
 
   // Reiniciar juego
   resetGame(): void {
     this.currentGameSignal.set(null);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(this.STORAGE_KEY);
+    }
   }
 
   // Obtener ganador

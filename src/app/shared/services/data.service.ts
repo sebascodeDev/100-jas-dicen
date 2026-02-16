@@ -33,13 +33,25 @@ export class DataService {
   }
 
   addQuestion(question: Omit<Question, 'id' | 'createdAt'>): Question {
+    console.log('DataService.addQuestion - Recibido:', question);
+
     const newQuestion: Question = {
       ...question,
       id: this.generateId(),
       createdAt: new Date()
     };
-    this.questionsSignal.update(questions => [...questions, newQuestion]);
+
+    console.log('DataService.addQuestion - Pregunta completa:', newQuestion);
+
+    this.questionsSignal.update(questions => {
+      const updated = [...questions, newQuestion];
+      console.log('DataService.addQuestion - Array actualizado:', updated);
+      return updated;
+    });
+
     this.saveQuestions();
+    console.log('DataService.addQuestion - Guardado en localStorage');
+
     return newQuestion;
   }
 
@@ -154,7 +166,15 @@ export class DataService {
   }
 
   private saveQuestions(): void {
-    localStorage.setItem('100jas_questions', JSON.stringify(this.questionsSignal()));
+    const data = this.questionsSignal();
+    console.log('saveQuestions - Datos a guardar:', data);
+    const jsonData = JSON.stringify(data);
+    console.log('saveQuestions - JSON:', jsonData);
+    localStorage.setItem('100jas_questions', jsonData);
+
+    // Verificar que se guardó
+    const verified = localStorage.getItem('100jas_questions');
+    console.log('saveQuestions - Verificación:', verified);
   }
 
   private loadTeams(): Team[] {

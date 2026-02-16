@@ -250,4 +250,54 @@ export class SoundService {
     oscillator.start(now);
     oscillator.stop(now + 0.15);
   }
+
+  // Sound effect for streak bonus
+  addBonus(): void {
+    if (!this.audioContext || this.isMuted) return;
+
+    // Arpeggio ascendente (C5-E5-G5)
+    const now = this.audioContext.currentTime;
+    const notes = [523.25, 659.25, 783.99]; // C5, E5, G5
+
+    notes.forEach((freq, i) => {
+      const oscillator = this.audioContext!.createOscillator();
+      const gainNode = this.audioContext!.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(this.audioContext!.destination);
+
+      oscillator.frequency.value = freq;
+      oscillator.type = 'sine';
+
+      const startTime = now + i * 0.05;
+      gainNode.gain.setValueAtTime(0.2, startTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.3);
+
+      oscillator.start(startTime);
+      oscillator.stop(startTime + 0.3);
+    });
+  }
+
+  // Sound effect for maximum errors reached
+  maxErrors(): void {
+    if (!this.audioContext || this.isMuted) return;
+
+    // Sonido dramático descendente
+    const now = this.audioContext.currentTime;
+    const oscillator = this.audioContext.createOscillator();
+    const gainNode = this.audioContext.createGain();
+
+    oscillator.connect(gainNode);
+    gainNode.connect(this.audioContext.destination);
+
+    oscillator.frequency.setValueAtTime(400, now);
+    oscillator.frequency.exponentialRampToValueAtTime(100, now + 0.8);
+    oscillator.type = 'sawtooth';
+
+    gainNode.gain.setValueAtTime(0.3, now);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.8);
+
+    oscillator.start(now);
+    oscillator.stop(now + 0.8);
+  }
 }

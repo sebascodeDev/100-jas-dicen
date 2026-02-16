@@ -12,6 +12,18 @@ import { Team } from '../../models/game.models';
   imports: [CommonModule],
   template: `
     <div class="min-h-screen p-4">
+      <!-- Countdown overlay -->
+      @if (showCountdown()) {
+        <div class="fixed inset-0 bg-black/90 z-50 flex items-center justify-center">
+          <div class="text-center">
+            <div class="text-9xl font-bold gradient-text animate-pulse">
+              {{ countdownNumber() }}
+            </div>
+            <p class="text-2xl text-gray-300 mt-8">Preparando el juego...</p>
+          </div>
+        </div>
+      }
+
       <div class="max-w-6xl mx-auto space-y-8">
         <!-- Header -->
         <div class="text-center">
@@ -120,6 +132,9 @@ export class GameLobbyComponent {
   selectedTeams = signal<Team[]>([]);
   questionCount = 5;
 
+  showCountdown = signal(false);
+  countdownNumber = signal(3);
+
   availableQuestions() {
     return this.dataService.getQuestions().length;
   }
@@ -164,14 +179,30 @@ export class GameLobbyComponent {
   startGame() {
     if (!this.canStartGame()) return;
 
-    this.soundService.gameStart();
-    const teamIds = this.selectedTeams().map(t => t.id);
-    const game = this.gameService.startGame(teamIds, this.questionCount);
+    // Iniciar countdown
+    this.showCountdown.set(true);
+    this.countdownNumber.set(3);
 
-    if (game) {
-      this.router.navigate(['/game/play']);
-    } else {
-      alert('Error al iniciar el juego. Verifica que haya suficientes preguntas.');
-    }
+    const countdown = setInterval(() => {
+      const current = this.countdownNumber();
+      if (current > 1) {
+        this.soundService.click();
+        this.countdownNumber.set(current - 1);
+      } else {
+        clearInterval(countdown);
+        this.soundService.gameStart();
+        this.showCountdown.set(false);
+
+        // Iniciar juego
+        const teamIds = this.selectedTeams().map(t => t.id);
+        const game = this.gameService.startGame(teamIds, this.questionCount);
+
+        if (game) {
+          this.router.navigate(['/game/play']);
+        } else {
+          alert('Error al iniciar el juego. Verifica que haya suficientes preguntas.');
+        }
+      }
+    }, 1000);
   }
 }

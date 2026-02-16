@@ -1,5 +1,6 @@
 import { Component, inject, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { DataService } from '../../shared/services/data.service';
 import { SoundService } from '../../shared/services/sound.service';
 import { Question } from '../../models/game.models';
@@ -7,11 +8,16 @@ import { Question } from '../../models/game.models';
 @Component({
   selector: 'app-questions-list',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   template: `
     <div class="space-y-6">
       <div class="flex justify-between items-center">
-        <h2 class="text-3xl font-bold text-primary">Preguntas</h2>
+        <div class="flex items-center gap-3">
+          <h2 class="text-3xl font-bold text-primary">Preguntas</h2>
+          <span class="px-3 py-1 bg-purple-600 text-white rounded-full text-sm font-semibold">
+            {{ questions().length }} {{ questions().length === 1 ? 'pregunta' : 'preguntas' }}
+          </span>
+        </div>
         <div class="flex gap-3">
           <button (click)="triggerFileInput()" (mouseenter)="soundService.hover()" class="px-4 py-2 bg-secondary text-white rounded glow-cyan">
             📄 Importar .md
@@ -48,12 +54,12 @@ import { Question } from '../../models/game.models';
             <div class="space-y-2">
               @for (answer of newAnswers; track $index) {
                 <div class="flex gap-2">
-                  <input type="text" placeholder="Respuesta {{$index + 1}}" #answerInput
+                  <input type="text" placeholder="Respuesta {{$index + 1}}"
                     class="flex-1 px-4 py-2 bg-gray-800 rounded text-white border border-gray-700"
-                    [(value)]="answer.text">
-                  <input type="number" placeholder="Puntos" #pointsInput
+                    [(ngModel)]="answer.text">
+                  <input type="number" placeholder="Puntos"
                     class="w-24 px-4 py-2 bg-gray-800 rounded text-white border border-gray-700"
-                    [(value)]="answer.points">
+                    [(ngModel)]="answer.points">
                 </div>
               }
             </div>
@@ -67,6 +73,14 @@ import { Question } from '../../models/game.models';
       }
 
       <div class="space-y-4">
+        @if (questions().length === 0) {
+          <div class="p-8 rounded-lg border border-gray-700 bg-gray-900/50 text-center">
+            <p class="text-xl text-gray-400 mb-4">📝 No hay preguntas disponibles</p>
+            <p class="text-sm text-gray-500">
+              Crea una nueva pregunta o importa un archivo .md para comenzar
+            </p>
+          </div>
+        }
         @for (question of questions(); track question.id) {
           <div class="p-6 rounded-lg border border-gray-700 bg-gray-900/50">
             <div class="flex justify-between items-start mb-4">
@@ -116,23 +130,41 @@ export class QuestionsListComponent {
   }
 
   saveQuestion(text: string) {
-    if (!text.trim()) return;
+    if (!text.trim()) {
+      console.warn('Pregunta vacía, no se guardará');
+      return;
+    }
+
+    console.log('Guardando pregunta:', text);
+    console.log('Respuestas actuales:', this.newAnswers);
 
     const answers = this.newAnswers
       .filter(a => a.text.trim())
       .map((a, i) => ({
         id: `${Date.now()}-${i}`,
-        text: a.text,
+        text: a.text.trim(),
         points: Number(a.points) || 0,
         order: i + 1
       }));
 
-    if (answers.length === 0) return;
+    console.log('Respuestas procesadas:', answers);
 
-    this.dataService.addQuestion({
+    if (answers.length === 0) {
+      console.warn('No hay respuestas válidas');
+      return;
+    }
+
+    const questionData = {
       text: text.trim(),
       answers
-    });
+    };
+
+    console.log('Datos a guardar:', questionData);
+
+    const savedQuestion = this.dataService.addQuestion(questionData);
+
+    console.log('Pregunta guardada:', savedQuestion);
+    console.log('Preguntas en signal:', this.dataService.getQuestions());
 
     this.soundService.correctAnswer(); // Success sound
     this.showAddForm = false;

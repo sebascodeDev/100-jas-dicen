@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { GameService } from '../../shared/services/game.service';
 import { SoundService } from '../../shared/services/sound.service';
+import { SyncService } from '../../shared/services/sync.service';
 import { GameSession, Question, Answer } from '../../models/game.models';
 
 @Component({
@@ -45,6 +46,34 @@ import { GameSession, Question, Answer } from '../../models/game.models';
               }
             </div>
 
+            <!-- Panel de estadísticas -->
+            <div class="p-4 rounded-lg border border-gray-700 bg-gray-900/50">
+              <h3 class="text-lg font-bold mb-3 gradient-text">Estadísticas</h3>
+              <div class="grid grid-cols-3 gap-4">
+                <div class="text-center">
+                  <p class="text-sm text-gray-400">Errores</p>
+                  <p class="text-2xl font-bold" [class]="getErrorsClass()">
+                    {{ game()?.errorsCount || 0 }} / {{ game()?.maxErrors || 3 }}
+                  </p>
+                </div>
+                <div class="text-center">
+                  <p class="text-sm text-gray-400">Racha Actual</p>
+                  <p class="text-2xl font-bold text-accent">
+                    {{ game()?.consecutiveCorrect || 0 }}
+                    @if (getStreakBonus() > 0) {
+                      <span class="text-sm text-yellow-400">+{{ getStreakBonus() }}pts</span>
+                    }
+                  </p>
+                </div>
+                <div class="text-center">
+                  <p class="text-sm text-gray-400">Preguntas Perfectas</p>
+                  <p class="text-2xl font-bold text-green-400">
+                    {{ game()?.perfectQuestions || 0 }}
+                  </p>
+                </div>
+              </div>
+            </div>
+
             <!-- Pregunta actual -->
             @if (currentQuestion()) {
               <div class="p-8 rounded-lg border border-primary bg-gray-900/70 glow-pink text-center">
@@ -58,9 +87,8 @@ import { GameSession, Question, Answer } from '../../models/game.models';
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 @for (answer of currentQuestion()!.answers; track answer.id) {
                   <div
-                    (click)="revealAnswer(answer)"
                     [class]="getAnswerCardClass(answer)"
-                    class="p-6 rounded-lg border-2 cursor-pointer transition-all transform hover:scale-105"
+                    class="p-6 rounded-lg border-2 transition-all"
                   >
                     @if (isAnswerRevealed(answer)) {
                       <div class="flex justify-between items-center">
@@ -76,36 +104,11 @@ import { GameSession, Question, Answer } from '../../models/game.models';
                 }
               </div>
 
-              <!-- Input de respuesta -->
-              <div class="p-6 rounded-lg border border-secondary bg-gray-900/70">
-                <div class="flex gap-4">
-                  <input
-                    type="text"
-                    [(ngModel)]="playerAnswer"
-                    (keyup.enter)="submitAnswer()"
-                    placeholder="Escribe tu respuesta..."
-                    class="flex-1 px-4 py-3 text-xl bg-gray-800 rounded text-white border border-gray-700 focus:border-secondary focus:outline-none"
-                    [disabled]="allAnswersRevealed()"
-                  />
-                  <button
-                    (click)="submitAnswer()"
-                    (mouseenter)="soundService.hover()"
-                    [disabled]="!playerAnswer.trim() || allAnswersRevealed()"
-                    class="px-8 py-3 bg-secondary text-white rounded text-lg font-semibold glow-cyan hover:bg-cyan-600 disabled:bg-gray-600 disabled:cursor-not-allowed"
-                  >
-                    Enviar
-                  </button>
-                </div>
-
-                @if (lastAttempt()) {
-                  <div class="mt-4 p-4 rounded" [class]="lastAttempt()!.correct ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'">
-                    @if (lastAttempt()!.correct) {
-                      ✓ ¡Correcto! +{{ lastAttempt()!.points }} puntos
-                    } @else {
-                      ✗ Respuesta incorrecta
-                    }
-                  </div>
-                }
+              <!-- Mensaje de instrucción -->
+              <div class="p-6 rounded-lg border border-secondary bg-gray-900/70 text-center">
+                <p class="text-xl text-gray-300">
+                  🎬 Usa el <span class="font-bold text-purple-400">Control de Presentador</span> para revelar las respuestas que los jugadores mencionen
+                </p>
               </div>
 
               <!-- Controles -->
@@ -124,6 +127,14 @@ import { GameSession, Question, Answer } from '../../models/game.models';
                   class="px-6 py-3 bg-yellow-600 text-white rounded hover:bg-yellow-500"
                 >
                   Revelar Todas
+                </button>
+
+                <button
+                  (click)="openPresenterWindow()"
+                  (mouseenter)="soundService.hover()"
+                  class="px-6 py-3 bg-purple-600 text-white rounded hover:bg-purple-500"
+                >
+                  🎬 Abrir Control Presentador
                 </button>
 
                 <button
@@ -203,13 +214,12 @@ import { GameSession, Question, Answer } from '../../models/game.models';
 export class GameBoardComponent implements OnInit {
   gameService = inject(GameService);
   soundService = inject(SoundService);
+  syncService = inject(SyncService);
   router = inject(Router);
 
   game = this.gameService.currentGame;
-  playerAnswer = '';
-  revealedAnswers = signal<Set<string>>(new Set());
-  currentTeamIndex = signal(0);
-  lastAttempt = signal<{ correct: boolean; points: number; bonus?: number } | null>(null);
+  revealedAnswers = computed(() => new Set(this.syncService.state().revealedAnswers));
+  currentTeamIndex = computed(() => this.syncService.state().currentTeamIndex);
 
   currentQuestion = computed(() => this.gameService.getCurrentQuestion());
   currentQuestionNumber = computed(() => (this.game()?.currentQuestionIndex || 0) + 1);
@@ -226,11 +236,36 @@ export class GameBoardComponent implements OnInit {
       this.router.navigate(['/game']);
     } else if (this.game()?.status === 'finished') {
       this.soundService.winner();
+    } else {
+      // Inicializar sync service con la pregunta actual
+      const currentQuestion = this.gameService.getCurrentQuestion();
+      if (currentQuestion) {
+        this.syncService.setCurrentQuestion(currentQuestion.id);
+      }
+
+      // Abrir automáticamente la ventana del presentador
+      setTimeout(() => this.openPresenterWindow(), 500);
     }
   }
 
   toggleMute() {
     this.soundService.toggleMute();
+  }
+
+  getErrorsClass(): string {
+    const errors = this.game()?.errorsCount || 0;
+    const maxErrors = this.game()?.maxErrors || 3;
+    if (errors === 0) return 'text-green-400';
+    if (errors >= maxErrors - 1) return 'text-red-400 animate-pulse';
+    return 'text-yellow-400';
+  }
+
+  getStreakBonus(): number {
+    const consecutive = this.game()?.consecutiveCorrect || 0;
+    if (consecutive >= 5) return 20;
+    if (consecutive >= 3) return 10;
+    if (consecutive >= 2) return 5;
+    return 0;
   }
 
   isAnswerRevealed(answer: Answer): boolean {
@@ -240,7 +275,7 @@ export class GameBoardComponent implements OnInit {
   revealAnswer(answer: Answer) {
     if (!this.isAnswerRevealed(answer)) {
       this.soundService.revealAnswer();
-      this.revealedAnswers.update(set => new Set(set).add(answer.id));
+      this.syncService.revealAnswer(answer.id);
     }
   }
 
@@ -253,43 +288,14 @@ export class GameBoardComponent implements OnInit {
   getAnswerCardClass(answer: Answer): string {
     return this.isAnswerRevealed(answer)
       ? 'border-accent bg-gray-800 glow-yellow'
-      : 'border-gray-700 bg-gray-900/70 hover:border-gray-500';
-  }
-
-  submitAnswer() {
-    if (!this.playerAnswer.trim()) return;
-
-    const result = this.gameService.checkAnswer(this.playerAnswer);
-    this.lastAttempt.set(result);
-
-    if (result.correct && result.answerId) {
-      // Play correct answer sound
-      this.soundService.correctAnswer();
-
-      // Revelar respuesta correcta
-      this.revealAnswer({ id: result.answerId } as Answer);
-
-      // Añadir puntos al equipo actual
-      const currentTeam = this.game()?.teams[this.currentTeamIndex()];
-      if (currentTeam) {
-        this.gameService.addPoints(currentTeam.id, result.points);
-        this.soundService.addPoints();
-      }
-    } else {
-      // Play incorrect answer sound
-      this.soundService.incorrectAnswer();
-    }
-
-    this.playerAnswer = '';
-
-    // Auto limpiar mensaje después de 2 segundos
-    setTimeout(() => this.lastAttempt.set(null), 2000);
+      : 'border-gray-700 bg-gray-900/70';
   }
 
   nextTeam() {
     this.soundService.click();
     const teamCount = this.game()?.teams.length || 0;
-    this.currentTeamIndex.update(i => (i + 1) % teamCount);
+    const newIndex = (this.currentTeamIndex() + 1) % teamCount;
+    this.syncService.setCurrentTeam(newIndex);
   }
 
   revealAllAnswers() {
@@ -297,18 +303,22 @@ export class GameBoardComponent implements OnInit {
     if (!question) return;
 
     this.soundService.revealAll();
-    const allIds = new Set(question.answers.map(a => a.id));
-    this.revealedAnswers.set(allIds);
+    const allIds = question.answers.map(a => a.id);
+    this.syncService.revealAll(allIds);
   }
 
   nextQuestion() {
     this.soundService.newQuestion();
-    this.revealedAnswers.set(new Set());
-    this.currentTeamIndex.set(0);
-    this.lastAttempt.set(null);
-    this.playerAnswer = '';
+    this.syncService.setCurrentTeam(0);
 
     const hasNext = this.gameService.nextQuestion();
+
+    // Resetear estado de sync para nueva pregunta
+    const newQuestion = this.gameService.getCurrentQuestion();
+    if (newQuestion) {
+      this.syncService.setCurrentQuestion(newQuestion.id);
+    }
+
     if (!hasNext) {
       // Juego terminado - el servicio ya lo marca como finished
       this.soundService.winner();
@@ -319,5 +329,18 @@ export class GameBoardComponent implements OnInit {
     this.soundService.click();
     this.gameService.resetGame();
     this.router.navigate(['/game']);
+  }
+
+  openPresenterWindow() {
+    const width = 800;
+    const height = 600;
+    const left = window.screen.width - width - 100;
+    const top = 100;
+
+    window.open(
+      '/game/presenter',
+      'presenter',
+      `width=${width},height=${height},left=${left},top=${top},resizable=yes`
+    );
   }
 }
