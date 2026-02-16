@@ -35,6 +35,14 @@ import { SoundService } from '../shared/services/sound.service';
           >
             ⚙️ Panel Admin
           </a>
+
+          <a
+            routerLink="/help"
+            (mouseenter)="soundService.hover()"
+            class="px-8 py-4 bg-accent text-white rounded-lg text-lg font-semibold glow-yellow hover:bg-yellow-600 transition-all transform hover:scale-105"
+          >
+            📖 Cómo Jugar
+          </a>
         </div>
 
         <!-- Características -->

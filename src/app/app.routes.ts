@@ -7,6 +7,10 @@ export const routes: Routes = [
     component: HomeComponent
   },
   {
+    path: 'help',
+    loadComponent: () => import('./help/help.component').then(m => m.HelpComponent)
+  },
+  {
     path: 'admin',
     loadChildren: () => import('./admin/admin.routes').then(m => m.ADMIN_ROUTES)
   },
