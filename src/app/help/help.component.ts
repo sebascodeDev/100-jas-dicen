@@ -60,33 +60,49 @@ import { SoundService } from '../shared/services/sound.service';
             <div class="p-4 bg-gray-800/50 rounded-lg">
               <h3 class="text-xl font-bold text-accent mb-2">⭐ Sistema de Puntos</h3>
               <ul class="list-disc list-inside space-y-2 ml-4">
-                <li>Cada respuesta correcta otorga puntos según su valor</li>
-                <li>Las respuestas más populares valen más puntos</li>
+                <li>Cada respuesta correcta otorga los puntos asignados a esa respuesta</li>
+                <li>Las respuestas más populares suelen valer más puntos</li>
+                <li>Los puntos de cada respuesta se definen al crear o importar las preguntas</li>
               </ul>
             </div>
 
             <div class="p-4 bg-gray-800/50 rounded-lg">
               <h3 class="text-xl font-bold text-yellow-400 mb-2">🔥 Bonos por Racha</h3>
+              <p class="mb-2 text-sm">Responder correctamente de forma consecutiva dentro de una misma pregunta otorga puntos extra:</p>
               <ul class="list-disc list-inside space-y-2 ml-4">
                 <li><strong>2 respuestas correctas seguidas:</strong> +5 puntos de bonus</li>
                 <li><strong>3-4 respuestas correctas seguidas:</strong> +10 puntos de bonus</li>
                 <li><strong>5+ respuestas correctas seguidas:</strong> +20 puntos de bonus</li>
               </ul>
+              <p class="mt-2 text-sm text-yellow-300">La racha se reinicia al cometer un error o al cambiar de pregunta.</p>
             </div>
 
             <div class="p-4 bg-red-900/30 rounded-lg border border-red-500">
               <h3 class="text-xl font-bold text-red-400 mb-2">❌ Sistema de Errores</h3>
               <ul class="list-disc list-inside space-y-2 ml-4">
-                <li>Cada error resta puntos al equipo (penalización progresiva: 5, 10, 15 puntos)</li>
-                <li><strong>Máximo 3 errores por pregunta</strong></li>
-                <li>Al alcanzar 3 errores, se avanza automáticamente a la siguiente pregunta</li>
-                <li>Los errores rompen la racha de respuestas correctas</li>
+                <li><strong>Máximo 3 errores por pregunta</strong> — al alcanzarlos se avanza automáticamente</li>
+                <li>Cada error resta puntos al equipo de forma progresiva:</li>
               </ul>
+              <div class="ml-8 mt-2 grid grid-cols-3 gap-2 text-center text-sm">
+                <div class="p-2 bg-red-900/40 rounded">
+                  <p class="text-red-300 font-bold">1er error</p>
+                  <p class="text-white font-bold">-5 pts</p>
+                </div>
+                <div class="p-2 bg-red-900/40 rounded">
+                  <p class="text-red-300 font-bold">2do error</p>
+                  <p class="text-white font-bold">-10 pts</p>
+                </div>
+                <div class="p-2 bg-red-900/40 rounded">
+                  <p class="text-red-300 font-bold">3er error</p>
+                  <p class="text-white font-bold">-15 pts</p>
+                </div>
+              </div>
+              <p class="mt-2 text-sm text-red-300">Los errores también rompen la racha de respuestas correctas.</p>
             </div>
 
             <div class="p-4 bg-green-900/30 rounded-lg border border-green-500">
               <h3 class="text-xl font-bold text-green-400 mb-2">🏆 Preguntas Perfectas</h3>
-              <p>Si un equipo responde todas las opciones de una pregunta sin errores, ¡obtiene una pregunta perfecta!</p>
+              <p>Una pregunta perfecta es aquella en la que el equipo no cometió ningún error. El contador de preguntas perfectas se muestra en el panel de estadísticas durante el juego.</p>
             </div>
           </div>
         </div>
@@ -128,29 +144,59 @@ import { SoundService } from '../shared/services/sound.service';
         <!-- Sección 4: Cómo Crear Preguntas -->
         <div class="p-6 rounded-lg border border-primary bg-gray-900/70">
           <h2 class="text-3xl font-bold text-primary mb-4">❓ Cómo Crear Preguntas</h2>
-          <div class="space-y-4 text-gray-300">
-            <h3 class="text-xl font-bold text-white">Método 1: Crear Manualmente</h3>
-            <ol class="list-decimal list-inside space-y-3 ml-4 text-lg">
-              <li>Ve al <strong class="text-white">Panel Admin</strong></li>
-              <li>Haz clic en la pestaña <strong class="text-white">"Preguntas"</strong></li>
-              <li>Haz clic en <strong class="text-white">"+ Nueva Pregunta"</strong></li>
-              <li>Escribe la pregunta</li>
-              <li>
-                Agrega las respuestas con sus respectivos puntos
-                <ul class="list-disc list-inside ml-6 mt-2">
-                  <li>Haz clic en "+ Respuesta" para añadir más opciones</li>
-                </ul>
-              </li>
-              <li>Haz clic en <strong class="text-white">"Guardar"</strong></li>
-            </ol>
+          <div class="space-y-6 text-gray-300">
 
-            <h3 class="text-xl font-bold text-white mt-6">Método 2: Importar desde archivo .md</h3>
-            <ol class="list-decimal list-inside space-y-3 ml-4 text-lg">
-              <li>Ve al <strong class="text-white">Panel Admin → Preguntas</strong></li>
-              <li>Haz clic en <strong class="text-white">"📄 Importar .md"</strong></li>
-              <li>Selecciona tu archivo .md con el formato correcto</li>
-              <li>¡Las preguntas se importarán automáticamente!</li>
-            </ol>
+            <div>
+              <h3 class="text-xl font-bold text-white mb-3">Método 1: Crear Manualmente</h3>
+              <ol class="list-decimal list-inside space-y-3 ml-4 text-lg">
+                <li>Ve al <strong class="text-white">Panel Admin</strong></li>
+                <li>Haz clic en la pestaña <strong class="text-white">"Preguntas"</strong></li>
+                <li>Haz clic en <strong class="text-white">"+ Nueva Pregunta"</strong></li>
+                <li>Escribe la pregunta</li>
+                <li>
+                  (Opcional) Asigna una <strong class="text-cyan-400">categoría</strong>:
+                  <ul class="list-disc list-inside ml-6 mt-2 space-y-1 text-base">
+                    <li>Selecciona una categoría existente del desplegable</li>
+                    <li>O elige <strong>"+ Nueva categoría..."</strong> e ingresa el nombre</li>
+                  </ul>
+                </li>
+                <li>
+                  Agrega las respuestas con sus respectivos puntos
+                  <ul class="list-disc list-inside ml-6 mt-2 text-base">
+                    <li>Haz clic en "+ Respuesta" para añadir más opciones</li>
+                  </ul>
+                </li>
+                <li>Haz clic en <strong class="text-white">"Guardar"</strong></li>
+              </ol>
+            </div>
+
+            <div>
+              <h3 class="text-xl font-bold text-white mb-3">Método 2: Importar desde archivo .md</h3>
+              <ol class="list-decimal list-inside space-y-3 ml-4 text-lg">
+                <li>Ve al <strong class="text-white">Panel Admin → Preguntas</strong></li>
+                <li>Haz clic en <strong class="text-white">"📄 Importar .md"</strong></li>
+                <li>Selecciona tu archivo .md con el formato correcto</li>
+                <li>Revisa la <strong class="text-cyan-400">previsualización</strong> de todas las preguntas encontradas</li>
+                <li>
+                  Asigna una <strong class="text-cyan-400">categoría</strong> a todas las preguntas importadas:
+                  <ul class="list-disc list-inside ml-6 mt-2 space-y-1 text-base">
+                    <li>Selecciona una categoría existente del desplegable</li>
+                    <li>O elige <strong>"+ Nueva categoría..."</strong> e ingresa el nombre</li>
+                    <li>O déjalo vacío para importar sin categoría</li>
+                  </ul>
+                </li>
+                <li>Haz clic en <strong class="text-white">"✓ Importar"</strong> para confirmar — las preguntas duplicadas se omiten automáticamente</li>
+              </ol>
+            </div>
+
+            <div class="p-4 bg-cyan-900/20 rounded-lg border border-cyan-500">
+              <h4 class="text-sm font-bold text-cyan-400 mb-1">📂 Sistema de Categorías</h4>
+              <ul class="list-disc list-inside space-y-1 text-sm ml-2">
+                <li>Las categorías se crean automáticamente al asignarlas — no requieren configuración previa</li>
+                <li>En el admin puedes <strong>filtrar</strong> preguntas por categoría y eliminar todas las de una categoría</li>
+                <li>En el <strong>Lobby</strong> puedes elegir una categoría para que solo se usen esas preguntas en la partida</li>
+              </ul>
+            </div>
           </div>
         </div>
 

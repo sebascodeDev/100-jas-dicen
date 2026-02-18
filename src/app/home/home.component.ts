@@ -100,6 +100,42 @@ import { SoundService } from '../shared/services/sound.service';
 
           <!-- Contenido scrolleable -->
           <div class="overflow-y-auto max-h-[calc(80vh-200px)] p-6 space-y-6">
+            <!-- v1.3.0 -->
+            <div class="border-l-4 border-purple-500 pl-4">
+              <h3 class="text-2xl font-bold text-purple-400 mb-2">v1.3.0 - Categorías e Importación Mejorada</h3>
+              <p class="text-sm text-gray-400 mb-3">Febrero 2026</p>
+              <ul class="space-y-2 text-gray-300">
+                <li class="flex items-start gap-2">
+                  <span class="text-green-400 mt-1">✅</span>
+                  <span><strong>Sistema de Categorías:</strong> Asigna categorías a las preguntas al crearlas o importarlas. Las categorías se crean automáticamente</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-green-400 mt-1">✅</span>
+                  <span><strong>Filtro por Categoría en Admin:</strong> Filtra la lista de preguntas por categoría y elimina todas las preguntas de una categoría con un clic</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-green-400 mt-1">✅</span>
+                  <span><strong>Filtro por Categoría en Lobby:</strong> Elige qué categoría de preguntas se usará en la partida</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-green-400 mt-1">✅</span>
+                  <span><strong>Previsualización de Importación:</strong> Modal que muestra todas las preguntas del archivo .md antes de confirmar la importación</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-green-400 mt-1">✅</span>
+                  <span><strong>Categoría durante Importación:</strong> Selecciona o crea una categoría para todas las preguntas del archivo al momento de importar</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-green-400 mt-1">✅</span>
+                  <span><strong>Detección de Duplicados Mejorada:</strong> Informa cuántas preguntas fueron omitidas por duplicadas y cuántas se importaron exitosamente</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-green-400 mt-1">✅</span>
+                  <span><strong>Seguimiento de Uso:</strong> Cada pregunta registra cuántas veces fue usada y cuándo fue la última vez. El sistema prioriza preguntas menos recientes</span>
+                </li>
+              </ul>
+            </div>
+
             <!-- v1.2.1 -->
             <div class="border-l-4 border-green-500 pl-4">
               <h3 class="text-2xl font-bold text-green-400 mb-2">v1.2.1 - Correcciones Críticas</h3>
@@ -237,7 +273,7 @@ import { SoundService } from '../shared/services/sound.service';
           <div class="sticky bottom-0 bg-gray-900 border-t border-gray-700 p-4 text-center">
             <p class="text-sm text-gray-400">
               Desarrollado para <span class="text-primary font-semibold">CJ Noroeste</span> •
-              Powered by <span class="text-cyan-400">Angular 19</span>
+              Powered by <span class="text-cyan-400">Angular 21</span>
             </p>
           </div>
         </div>
