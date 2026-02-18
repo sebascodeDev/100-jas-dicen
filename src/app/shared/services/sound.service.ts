@@ -39,6 +39,12 @@ export class SoundService {
 
     oscillator.start(this.audioContext.currentTime);
     oscillator.stop(this.audioContext.currentTime + duration);
+
+    // Clean up nodes after sound finishes to prevent memory leaks
+    oscillator.onended = () => {
+      oscillator.disconnect();
+      gainNode.disconnect();
+    };
   }
 
   // Sound effect for correct answer reveal
@@ -67,6 +73,13 @@ export class SoundService {
     oscillator2.start(now);
     oscillator1.stop(now + 0.4);
     oscillator2.stop(now + 0.4);
+
+    // Clean up nodes after sound finishes
+    oscillator1.onended = () => {
+      oscillator1.disconnect();
+      oscillator2.disconnect();
+      gainNode.disconnect();
+    };
   }
 
   // Sound effect for incorrect answer
@@ -89,6 +102,12 @@ export class SoundService {
 
     oscillator.start(now);
     oscillator.stop(now + 0.5);
+
+    // Clean up nodes after sound finishes
+    oscillator.onended = () => {
+      oscillator.disconnect();
+      gainNode.disconnect();
+    };
   }
 
   // Sound effect for revealing an answer
@@ -112,6 +131,12 @@ export class SoundService {
 
     oscillator.start(now);
     oscillator.stop(now + 0.2);
+
+    // Clean up nodes after sound finishes
+    oscillator.onended = () => {
+      oscillator.disconnect();
+      gainNode.disconnect();
+    };
   }
 
   // Sound effect for game start
@@ -138,6 +163,12 @@ export class SoundService {
 
       oscillator.start(startTime);
       oscillator.stop(startTime + 0.5);
+
+      // Clean up nodes after sound finishes
+      oscillator.onended = () => {
+        oscillator.disconnect();
+        gainNode.disconnect();
+      };
     });
   }
 
@@ -170,6 +201,12 @@ export class SoundService {
 
       oscillator.start(startTime);
       oscillator.stop(startTime + 0.4);
+
+      // Clean up nodes after sound finishes
+      oscillator.onended = () => {
+        oscillator.disconnect();
+        gainNode.disconnect();
+      };
     });
   }
 
@@ -199,6 +236,12 @@ export class SoundService {
 
     oscillator.start(now);
     oscillator.stop(now + 0.3);
+
+    // Clean up nodes after sound finishes
+    oscillator.onended = () => {
+      oscillator.disconnect();
+      gainNode.disconnect();
+    };
   }
 
   // Sound effect for revealing all answers
@@ -222,6 +265,12 @@ export class SoundService {
 
     oscillator.start(now);
     oscillator.stop(now + 0.5);
+
+    // Clean up nodes after sound finishes
+    oscillator.onended = () => {
+      oscillator.disconnect();
+      gainNode.disconnect();
+    };
   }
 
   // Sound effect for hover
@@ -249,6 +298,12 @@ export class SoundService {
 
     oscillator.start(now);
     oscillator.stop(now + 0.15);
+
+    // Clean up nodes after sound finishes
+    oscillator.onended = () => {
+      oscillator.disconnect();
+      gainNode.disconnect();
+    };
   }
 
   // Sound effect for streak bonus
@@ -275,6 +330,12 @@ export class SoundService {
 
       oscillator.start(startTime);
       oscillator.stop(startTime + 0.3);
+
+      // Clean up nodes after sound finishes
+      oscillator.onended = () => {
+        oscillator.disconnect();
+        gainNode.disconnect();
+      };
     });
   }
 
@@ -299,5 +360,11 @@ export class SoundService {
 
     oscillator.start(now);
     oscillator.stop(now + 0.8);
+
+    // Clean up nodes after sound finishes
+    oscillator.onended = () => {
+      oscillator.disconnect();
+      gainNode.disconnect();
+    };
   }
 }

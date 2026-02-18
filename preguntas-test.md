@@ -243,3 +243,378 @@ Este archivo contiene preguntas de ejemplo para testear el sistema.
 - Hacer deporte | 20
 - Jugar videojuegos | 15
 - Salir con amigos | 5
+
+# ¿Qué color de ropa usas más?
+
+- Negro | 38
+- Azul | 26
+- Blanco | 18
+- Gris | 12
+- Rojo | 6
+
+# ¿Qué prenda de vestir es esencial?
+
+- Pantalones | 35
+- Camisa | 28
+- Zapatos | 20
+- Ropa interior | 12
+- Calcetines | 5
+
+# ¿Qué bebida alcohólica es más popular?
+
+- Cerveza | 40
+- Vino | 25
+- Tequila | 18
+- Whisky | 12
+- Ron | 5
+
+# ¿Qué postre te gusta más?
+
+- Pastel | 32
+- Helado | 30
+- Galletas | 18
+- Flan | 12
+- Gelatina | 8
+
+# ¿Qué instrumento musical es más popular?
+
+- Guitarra | 38
+- Piano | 28
+- Batería | 15
+- Violín | 12
+- Flauta | 7
+
+# ¿Qué género musical prefieres?
+
+- Pop | 30
+- Rock | 25
+- Reggaetón | 20
+- Balada | 15
+- Electrónica | 10
+
+# ¿Qué superhéroe es el más popular?
+
+- Spider-Man | 32
+- Superman | 28
+- Batman | 20
+- Iron Man | 12
+- Wonder Woman | 8
+
+# ¿Qué consola de videojuegos es mejor?
+
+- PlayStation | 35
+- Xbox | 28
+- Nintendo Switch | 20
+- PC | 12
+- Móvil | 5
+
+# ¿Qué videojuego es más jugado?
+
+- Fortnite | 30
+- Minecraft | 28
+- FIFA | 20
+- Call of Duty | 15
+- GTA | 7
+
+# ¿Qué estación del año prefieres?
+
+- Verano | 35
+- Primavera | 28
+- Otoño | 20
+- Invierno | 17
+
+# ¿Qué mes del año te gusta más?
+
+- Diciembre | 35
+- Julio | 25
+- Agosto | 18
+- Abril | 12
+- Octubre | 10
+
+# ¿Qué día de la semana prefieres?
+
+- Viernes | 38
+- Sábado | 32
+- Domingo | 18
+- Miércoles | 8
+- Lunes | 4
+
+# ¿Qué materia odias en la escuela?
+
+- Matemáticas | 40
+- Física | 25
+- Química | 18
+- Historia | 12
+- Inglés | 5
+
+# ¿Qué materia te gusta más?
+
+- Educación Física | 30
+- Arte | 28
+- Matemáticas | 20
+- Historia | 12
+- Ciencias | 10
+
+# ¿Qué actividad extracurricular haces?
+
+- Deporte | 35
+- Música | 25
+- Arte | 20
+- Idiomas | 12
+- Computación | 8
+
+# ¿Qué asignatura pendiente tienes?
+
+- Aprender inglés | 35
+- Hacer ejercicio | 28
+- Ahorrar dinero | 20
+- Viajar | 12
+- Leer más | 5
+
+# ¿Qué superpoder te gustaría tener?
+
+- Volar | 35
+- Invisibilidad | 28
+- Superfuerza | 18
+- Teletransportación | 12
+- Leer mentes | 7
+
+# ¿Qué país te gustaría visitar?
+
+- Francia | 30
+- Italia | 28
+- Japón | 20
+- Estados Unidos | 15
+- España | 7
+
+# ¿Qué ciudad es más bonita?
+
+- París | 35
+- Roma | 25
+- Nueva York | 20
+- Barcelona | 12
+- Tokio | 8
+
+# ¿Qué monumento es más famoso?
+
+- Torre Eiffel | 40
+- Estatua de la Libertad | 25
+- Coliseo Romano | 18
+- Taj Mahal | 12
+- Pirámides de Egipto | 5
+
+# ¿Qué idioma te gustaría aprender?
+
+- Inglés | 40
+- Francés | 25
+- Italiano | 18
+- Japonés | 12
+- Alemán | 5
+
+# ¿Qué programa de TV ves más?
+
+- Noticieros | 32
+- Series | 30
+- Reality shows | 18
+- Deportes | 12
+- Documentales | 8
+
+# ¿Qué streaming usas más?
+
+- Netflix | 45
+- YouTube | 25
+- Disney+ | 15
+- Amazon Prime | 10
+- HBO Max | 5
+
+# ¿Qué tipo de película prefieres?
+
+- Comedia | 32
+- Acción | 28
+- Drama | 20
+- Terror | 12
+- Romance | 8
+
+# ¿Qué actor es el más famoso?
+
+- Tom Cruise | 30
+- Leonardo DiCaprio | 28
+- Will Smith | 20
+- Brad Pitt | 14
+- Robert Downey Jr. | 8
+
+# ¿Qué actriz es la más famosa?
+
+- Jennifer Lawrence | 28
+- Scarlett Johansson | 26
+- Angelina Jolie | 22
+- Meryl Streep | 14
+- Emma Watson | 10
+
+# ¿Qué fast food es más conocida?
+
+- McDonald's | 45
+- KFC | 25
+- Burger King | 15
+- Subway | 10
+- Domino's | 5
+
+# ¿Qué snack comes más?
+
+- Papas fritas | 35
+- Galletas | 28
+- Chocolate | 20
+- Palomitas | 12
+- Cacahuates | 5
+
+# ¿Qué dulce es el más popular?
+
+- Chocolate | 40
+- Caramelos | 25
+- Gomitas | 18
+- Chicle | 12
+- Paletas | 5
+
+# ¿Qué sabor de helado prefieres?
+
+- Chocolate | 32
+- Vainilla | 28
+- Fresa | 20
+- Cookies and Cream | 12
+- Napolitano | 8
+
+# ¿Qué refresco tomas más?
+
+- Coca-Cola | 45
+- Pepsi | 25
+- Sprite | 15
+- Fanta | 10
+- 7UP | 5
+
+# ¿Qué tipo de pizza prefieres?
+
+- Pepperoni | 35
+- Hawaiana | 28
+- Cuatro quesos | 18
+- Vegetariana | 12
+- Mexicana | 7
+
+# ¿Qué ingrediente no puede faltar en una hamburguesa?
+
+- Carne | 40
+- Pan | 30
+- Queso | 15
+- Lechuga | 10
+- Tomate | 5
+
+# ¿Qué carne comes más?
+
+- Pollo | 38
+- Res | 30
+- Cerdo | 18
+- Pescado | 10
+- Pavo | 4
+
+# ¿Qué desayuno es el más común?
+
+- Huevos | 32
+- Cereal | 28
+- Pan tostado | 20
+- Fruta | 12
+- Avena | 8
+
+# ¿Qué bebes en la comida?
+
+- Agua | 42
+- Refresco | 28
+- Jugo | 15
+- Té helado | 10
+- Cerveza | 5
+
+# ¿Qué haces después de comer?
+
+- Descansar | 35
+- Lavar platos | 28
+- Ver TV | 20
+- Trabajar | 12
+- Dormir siesta | 5
+
+# ¿Qué ejercicio haces más?
+
+- Caminar | 35
+- Correr | 28
+- Pesas | 18
+- Yoga | 12
+- Nadar | 7
+
+# ¿Dónde haces ejercicio?
+
+- Gimnasio | 38
+- Casa | 30
+- Parque | 18
+- Calle | 10
+- Cancha deportiva | 4
+
+# ¿A qué hora te levantas?
+
+- 6:00 AM | 30
+- 7:00 AM | 28
+- 8:00 AM | 20
+- 5:00 AM | 12
+- 9:00 AM | 10
+
+# ¿A qué hora te duermes?
+
+- 11:00 PM | 32
+- 10:00 PM | 28
+- 12:00 AM | 20
+- 9:00 PM | 12
+- 1:00 AM | 8
+
+# ¿Cuántas horas duermes?
+
+- 7 horas | 32
+- 8 horas | 30
+- 6 horas | 20
+- 5 horas | 12
+- 9 horas | 6
+
+# ¿Qué haces antes de dormir?
+
+- Ver el celular | 40
+- Leer | 25
+- Ver TV | 18
+- Meditar | 12
+- Bañarse | 5
+
+# ¿Qué clima prefieres?
+
+- Cálido | 35
+- Templado | 30
+- Frío | 20
+- Fresco | 10
+- Lluvioso | 5
+
+# ¿Qué fenómeno natural te asusta más?
+
+- Terremoto | 35
+- Huracán | 28
+- Tornado | 18
+- Inundación | 12
+- Erupción volcánica | 7
+
+# ¿Qué tipo de libro lees?
+
+- Novelas | 30
+- Biografías | 25
+- Ciencia ficción | 20
+- Autoayuda | 15
+- Misterio | 10
+
+# ¿Dónde compras tu ropa?
+
+- Tienda departamental | 32
+- Centro comercial | 30
+- En línea | 20
+- Tienda local | 12
+- Mercado | 6

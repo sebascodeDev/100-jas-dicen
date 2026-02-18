@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { SoundService } from '../shared/services/sound.service';
 
@@ -15,7 +15,7 @@ import { SoundService } from '../shared/services/sound.service';
         </h1>
 
         <p class="text-xl md:text-2xl text-gray-300">
-          El juego de preguntas más emocionante con temática de casino
+          El juego de preguntas más emocionante del CJ Noroeste
         </p>
 
         <!-- Botones principales -->
@@ -45,6 +45,17 @@ import { SoundService } from '../shared/services/sound.service';
           </a>
         </div>
 
+        <!-- Botón Changelog -->
+        <div class="mt-6">
+          <button
+            (click)="openChangelog()"
+            (mouseenter)="soundService.hover()"
+            class="px-6 py-3 bg-gray-800 text-gray-300 rounded-lg text-sm font-semibold border border-gray-600 hover:border-gray-400 hover:text-white transition-all transform hover:scale-105"
+          >
+            📋 Ver Changelog y Actualizaciones
+          </button>
+        </div>
+
         <!-- Características -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16">
           <div class="p-6 rounded-lg border border-gray-700 bg-gray-900/50 backdrop-blur">
@@ -64,9 +75,188 @@ import { SoundService } from '../shared/services/sound.service';
         </div>
       </div>
     </div>
+
+    <!-- Modal Changelog -->
+    @if (showChangelog()) {
+      <div
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+        (click)="closeChangelog()"
+      >
+        <div
+          class="bg-gray-900 rounded-xl border-2 border-gray-700 max-w-3xl w-full max-h-[80vh] overflow-hidden shadow-2xl"
+          (click)="$event.stopPropagation()"
+        >
+          <!-- Header -->
+          <div class="sticky top-0 bg-gray-900 border-b border-gray-700 p-6 flex justify-between items-center z-10">
+            <h2 class="text-3xl font-bold gradient-text">📋 Changelog y Actualizaciones</h2>
+            <button
+              (click)="closeChangelog()"
+              (mouseenter)="soundService.hover()"
+              class="px-4 py-2 bg-gray-800 text-gray-300 rounded-lg border border-gray-600 hover:border-red-500 hover:text-red-400 transition-all"
+            >
+              ✕ Cerrar
+            </button>
+          </div>
+
+          <!-- Contenido scrolleable -->
+          <div class="overflow-y-auto max-h-[calc(80vh-200px)] p-6 space-y-6">
+            <!-- v1.2.1 -->
+            <div class="border-l-4 border-green-500 pl-4">
+              <h3 class="text-2xl font-bold text-green-400 mb-2">v1.2.1 - Correcciones Críticas</h3>
+              <p class="text-sm text-gray-400 mb-3">Febrero 2026</p>
+              <ul class="space-y-2 text-gray-300">
+                <li class="flex items-start gap-2">
+                  <span class="text-yellow-400 mt-1">🔧</span>
+                  <span><strong>Memory Leak Corregido:</strong> Los nodos de audio ahora se desconectan correctamente después de reproducirse, eliminando consumo progresivo de memoria en sesiones largas</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-yellow-400 mt-1">🔧</span>
+                  <span><strong>Sistema de Rachas Arreglado:</strong> La racha de aciertos ahora se resetea correctamente entre preguntas, asegurando que los bonos (+5, +10, +20 pts) se calculen solo dentro de cada pregunta</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-green-400 mt-1">✅</span>
+                  <span><strong>Modal de Changelog:</strong> Nueva ventana de actualizaciones accesible desde la página principal</span>
+                </li>
+              </ul>
+            </div>
+
+            <!-- v1.2.0 -->
+            <div class="border-l-4 border-pink-500 pl-4">
+              <h3 class="text-2xl font-bold text-pink-400 mb-2">v1.2.0 - Minimalismo y Exportación</h3>
+              <p class="text-sm text-gray-400 mb-3">Febrero 2026</p>
+              <ul class="space-y-2 text-gray-300">
+                <li class="flex items-start gap-2">
+                  <span class="text-green-400 mt-1">✅</span>
+                  <span><strong>Exportación PNG:</strong> Descarga los resultados del juego como imagen PNG de alta calidad</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-green-400 mt-1">✅</span>
+                  <span><strong>Diseño Minimalista:</strong> PNG con diseño limpio, tipografía profesional y sin elementos decorativos</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-green-400 mt-1">✅</span>
+                  <span><strong>Optimización:</strong> Archivo PNG más ligero (800x900px) con escala de grises y colores sutiles</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-red-400 mt-1">🗑️</span>
+                  <span><strong>Eliminado:</strong> Sistema de música de fondo (simplificación de la experiencia)</span>
+                </li>
+              </ul>
+            </div>
+
+            <!-- v1.1.0 -->
+            <div class="border-l-4 border-cyan-500 pl-4">
+              <h3 class="text-2xl font-bold text-cyan-400 mb-2">v1.1.0 - Ventana Presentador y Sistema de Puntos</h3>
+              <p class="text-sm text-gray-400 mb-3">Enero 2026</p>
+              <ul class="space-y-2 text-gray-300">
+                <li class="flex items-start gap-2">
+                  <span class="text-green-400 mt-1">✅</span>
+                  <span><strong>Ventana Presentador:</strong> Control remoto del juego desde una ventana emergente sincronizada</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-green-400 mt-1">✅</span>
+                  <span><strong>Sistema de Errores:</strong> Máximo 3 errores por pregunta, avance automático al alcanzarlos</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-green-400 mt-1">✅</span>
+                  <span><strong>Rachas de Aciertos:</strong> Bonus por respuestas consecutivas correctas (+5, +10, +20 pts)</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-green-400 mt-1">✅</span>
+                  <span><strong>Estadísticas en Vivo:</strong> Panel con errores, racha actual y preguntas perfectas</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-green-400 mt-1">✅</span>
+                  <span><strong>Penalización:</strong> Resta de puntos progresiva por respuestas incorrectas (5, 10, 15 pts)</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-green-400 mt-1">✅</span>
+                  <span><strong>Sonidos Especiales:</strong> Efectos de audio para bonus y máximo de errores alcanzado</span>
+                </li>
+              </ul>
+            </div>
+
+            <!-- v1.0.5 -->
+            <div class="border-l-4 border-yellow-500 pl-4">
+              <h3 class="text-2xl font-bold text-yellow-400 mb-2">v1.0.5 - Mejoras de Experiencia</h3>
+              <p class="text-sm text-gray-400 mb-3">Diciembre 2025</p>
+              <ul class="space-y-2 text-gray-300">
+                <li class="flex items-start gap-2">
+                  <span class="text-green-400 mt-1">✅</span>
+                  <span><strong>Página de Ayuda:</strong> Guía completa sobre cómo jugar y reglas del juego</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-green-400 mt-1">✅</span>
+                  <span><strong>Countdown Timer:</strong> Cuenta regresiva de 3 segundos antes de iniciar la partida</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-green-400 mt-1">✅</span>
+                  <span><strong>Importación Markdown:</strong> Carga masiva de preguntas desde archivos .md</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-green-400 mt-1">✅</span>
+                  <span><strong>Contador de Preguntas:</strong> Muestra el total de preguntas disponibles en el admin</span>
+                </li>
+              </ul>
+            </div>
+
+            <!-- v1.0.0 -->
+            <div class="border-l-4 border-gray-500 pl-4">
+              <h3 class="text-2xl font-bold text-gray-400 mb-2">v1.0.0 - Lanzamiento Inicial</h3>
+              <p class="text-sm text-gray-400 mb-3">Noviembre 2025</p>
+              <ul class="space-y-2 text-gray-300">
+                <li class="flex items-start gap-2">
+                  <span class="text-green-400 mt-1">✅</span>
+                  <span><strong>Juego Base:</strong> Mecánica completa del juego "100 JAS Dicen"</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-green-400 mt-1">✅</span>
+                  <span><strong>Gestión de Equipos:</strong> Creación y personalización de equipos con colores</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-green-400 mt-1">✅</span>
+                  <span><strong>Gestión de Preguntas:</strong> CRUD completo de preguntas con múltiples respuestas</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-green-400 mt-1">✅</span>
+                  <span><strong>Sistema de Rankings:</strong> Estadísticas y clasificación de equipos</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-green-400 mt-1">✅</span>
+                  <span><strong>Efectos de Sonido:</strong> Audio feedback para todas las acciones del juego</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-green-400 mt-1">✅</span>
+                  <span><strong>Diseño Responsive:</strong> Interfaz adaptable a diferentes tamaños de pantalla</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <div class="sticky bottom-0 bg-gray-900 border-t border-gray-700 p-4 text-center">
+            <p class="text-sm text-gray-400">
+              Desarrollado para <span class="text-primary font-semibold">CJ Noroeste</span> •
+              Powered by <span class="text-cyan-400">Angular 19</span>
+            </p>
+          </div>
+        </div>
+      </div>
+    }
   `,
   styles: []
 })
 export class HomeComponent {
   soundService = inject(SoundService);
+  showChangelog = signal(false);
+
+  openChangelog() {
+    this.soundService.click();
+    this.showChangelog.set(true);
+  }
+
+  closeChangelog() {
+    this.soundService.click();
+    this.showChangelog.set(false);
+  }
 }
