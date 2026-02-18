@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { DataService } from '../../shared/services/data.service';
@@ -79,8 +79,25 @@ import { Team } from '../../models/game.models';
         <div class="p-6 rounded-lg border border-secondary bg-gray-900/70">
           <h3 class="text-2xl font-bold text-secondary mb-4">Configuración</h3>
           <div class="space-y-4">
+            <!-- Selector de Categoría -->
             <div>
-              <label class="block text-gray-300 mb-2">Cantidad de preguntas:</label>
+              <label class="block text-gray-300 mb-2">Categoría de preguntas:</label>
+              <select
+                [(value)]="selectedCategory"
+                (change)="updateCategory($event)"
+                (mouseenter)="soundService.hover()"
+                class="w-full px-4 py-2 bg-gray-800 rounded text-white border border-gray-700"
+              >
+                <option value="">Todas las categorías</option>
+                @for (category of availableCategories(); track category) {
+                  <option [value]="category">{{ category }}</option>
+                }
+              </select>
+            </div>
+
+            <!-- Selector de Cantidad de Preguntas -->
+            <div>
+              <label class="block text-gray-300 mb-2">Cantidad de preguntas por ronda:</label>
               <input
                 type="number"
                 min="1"
@@ -90,9 +107,22 @@ import { Team } from '../../models/game.models';
                 class="w-32 px-4 py-2 bg-gray-800 rounded text-white border border-gray-700"
               />
             </div>
-            <p class="text-sm text-gray-400">
-              Preguntas disponibles: {{ availableQuestions() }}
-            </p>
+
+            <!-- Mostrar rondas disponibles -->
+            <div class="p-4 bg-gray-800/50 rounded border border-gray-700">
+              <p class="text-sm text-gray-400 mb-1">
+                Preguntas disponibles: {{ availableQuestionsCount() }}
+              </p>
+              <p class="text-sm text-gray-400">
+                Rondas posibles con {{ questionCount }} preguntas:
+                <span class="text-accent font-bold">{{ maxRounds() }}</span>
+              </p>
+              @if (selectedCategory()) {
+                <p class="text-xs text-cyan-400 mt-2">
+                  📂 Categoría: {{ selectedCategory() }}
+                </p>
+              }
+            </div>
           </div>
         </div>
 
@@ -131,12 +161,32 @@ export class GameLobbyComponent {
   teams = this.dataService.teams;
   selectedTeams = signal<Team[]>([]);
   questionCount = 5;
+  selectedCategory = signal<string>('');
 
   showCountdown = signal(false);
   countdownNumber = signal(3);
 
-  availableQuestions() {
+  // Computed values
+  availableCategories = computed(() => this.dataService.getCategories());
+
+  availableQuestionsCount = computed(() => {
+    const category = this.selectedCategory();
+    if (category) {
+      return this.dataService.getQuestionsByCategory(category).length;
+    }
     return this.dataService.getQuestions().length;
+  });
+
+  maxRounds = computed(() => {
+    const available = this.availableQuestionsCount();
+    if (available === 0 || this.questionCount === 0) return 0;
+    return Math.floor(available / this.questionCount);
+  });
+
+  updateCategory(event: Event) {
+    const value = (event.target as HTMLSelectElement).value;
+    this.soundService.click();
+    this.selectedCategory.set(value);
   }
 
   toggleTeam(team: Team) {
@@ -173,7 +223,7 @@ export class GameLobbyComponent {
 
   canStartGame(): boolean {
     return this.selectedTeams().length >= 2 &&
-           this.availableQuestions() >= this.questionCount;
+           this.availableQuestionsCount() >= this.questionCount;
   }
 
   startGame() {
@@ -193,9 +243,10 @@ export class GameLobbyComponent {
         this.soundService.gameStart();
         this.showCountdown.set(false);
 
-        // Iniciar juego
+        // Iniciar juego con categoría seleccionada
         const teamIds = this.selectedTeams().map(t => t.id);
-        const game = this.gameService.startGame(teamIds, this.questionCount);
+        const category = this.selectedCategory() || undefined;
+        const game = this.gameService.startGame(teamIds, this.questionCount, category);
 
         if (game) {
           this.router.navigate(['/game/play']);

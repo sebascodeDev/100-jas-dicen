@@ -32,8 +32,14 @@ export class DataService {
     return this.questionsSignal().find(q => q.id === id);
   }
 
-  addQuestion(question: Omit<Question, 'id' | 'createdAt'>): Question {
+  addQuestion(question: Omit<Question, 'id' | 'createdAt'>): Question | null {
     console.log('DataService.addQuestion - Recibido:', question);
+
+    // Verificar duplicados
+    if (this.isDuplicateQuestion(question.text, question.category)) {
+      console.warn('DataService.addQuestion - Pregunta duplicada detectada');
+      return null;
+    }
 
     const newQuestion: Question = {
       ...question,
@@ -75,6 +81,124 @@ export class DataService {
     this.questionsSignal.set(filtered);
     this.saveQuestions();
     return true;
+  }
+
+  deleteQuestions(ids: string[]): number {
+    const initialLength = this.questionsSignal().length;
+    const filtered = this.questionsSignal().filter(q => !ids.includes(q.id));
+    const deletedCount = initialLength - filtered.length;
+
+    if (deletedCount > 0) {
+      this.questionsSignal.set(filtered);
+      this.saveQuestions();
+    }
+
+    return deletedCount;
+  }
+
+  deleteQuestionsByCategory(category: string): number {
+    const initialLength = this.questionsSignal().length;
+    const filtered = this.questionsSignal().filter(q => q.category !== category);
+    const deletedCount = initialLength - filtered.length;
+
+    if (deletedCount > 0) {
+      this.questionsSignal.set(filtered);
+      this.saveQuestions();
+    }
+
+    return deletedCount;
+  }
+
+  deleteAllQuestions(): number {
+    const deletedCount = this.questionsSignal().length;
+    this.questionsSignal.set([]);
+    this.saveQuestions();
+    return deletedCount;
+  }
+
+  isDuplicateQuestion(text: string, category?: string): boolean {
+    const normalizedText = text.toLowerCase().trim();
+    return this.questionsSignal().some(q => {
+      const sameText = q.text.toLowerCase().trim() === normalizedText;
+      const sameCategory = category ? q.category === category : true;
+      return sameText && sameCategory;
+    });
+  }
+
+  // ========== CATEGORIES ==========
+
+  getCategories(): string[] {
+    const categories = this.questionsSignal()
+      .map(q => q.category)
+      .filter((cat): cat is string => !!cat);
+    return Array.from(new Set(categories)).sort();
+  }
+
+  getQuestionsByCategory(category: string): Question[] {
+    return this.questionsSignal().filter(q => q.category === category);
+  }
+
+  updateQuestionCategory(questionId: string, category: string): boolean {
+    return this.updateQuestion(questionId, { category });
+  }
+
+  // ========== USAGE TRACKING ==========
+
+  markQuestionsAsUsed(questionIds: string[]): void {
+    this.questionsSignal.update(questions => {
+      return questions.map(q => {
+        if (questionIds.includes(q.id)) {
+          return {
+            ...q,
+            usageCount: (q.usageCount || 0) + 1,
+            lastUsedAt: new Date()
+          };
+        }
+        return q;
+      });
+    });
+    this.saveQuestions();
+  }
+
+  getAvailableQuestions(options: {
+    category?: string;
+    excludeRecentDays?: number;
+    minRequired?: number;
+  } = {}): Question[] {
+    const {
+      category,
+      excludeRecentDays = 7,
+      minRequired = 0
+    } = options;
+
+    let questions = this.questionsSignal();
+
+    // Filtrar por categoría si se especifica
+    if (category) {
+      questions = questions.filter(q => q.category === category);
+    }
+
+    // Filtrar preguntas usadas recientemente
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - excludeRecentDays);
+
+    const availableQuestions = questions.filter(q => {
+      if (!q.lastUsedAt) return true; // Nunca ha sido usada
+      return new Date(q.lastUsedAt) < cutoffDate;
+    });
+
+    // Si no hay suficientes preguntas disponibles, incluir las menos usadas
+    if (availableQuestions.length < minRequired) {
+      const recentlyUsed = questions
+        .filter(q => q.lastUsedAt && new Date(q.lastUsedAt) >= cutoffDate)
+        .sort((a, b) => (a.usageCount || 0) - (b.usageCount || 0));
+
+      const needed = minRequired - availableQuestions.length;
+      return [...availableQuestions, ...recentlyUsed.slice(0, needed)];
+    }
+
+    // Ordenar por menor uso
+    return availableQuestions.sort((a, b) => (a.usageCount || 0) - (b.usageCount || 0));
   }
 
   // ========== TEAMS ==========

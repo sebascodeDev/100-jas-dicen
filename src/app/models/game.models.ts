@@ -6,6 +6,8 @@ export interface Question {
   category?: string;
   answers: Answer[];
   createdAt: Date;
+  usageCount?: number; // Número de veces que se ha usado
+  lastUsedAt?: Date; // Última vez que se usó
 }
 
 export interface Answer {

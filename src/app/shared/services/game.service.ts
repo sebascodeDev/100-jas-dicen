@@ -57,10 +57,16 @@ export class GameService {
   }
 
   // Iniciar nuevo juego
-  startGame(teamIds: string[], questionCount: number = 5): GameSession | null {
-    const allQuestions = this.dataService.getQuestions();
-    if (allQuestions.length < questionCount) {
-      console.error('No hay suficientes preguntas');
+  startGame(teamIds: string[], questionCount: number = 5, category?: string): GameSession | null {
+    // Usar el sistema de tracking de uso para obtener preguntas
+    const availableQuestions = this.dataService.getAvailableQuestions({
+      category,
+      excludeRecentDays: 7,
+      minRequired: questionCount
+    });
+
+    if (availableQuestions.length < questionCount) {
+      console.error('No hay suficientes preguntas disponibles');
       return null;
     }
 
@@ -73,9 +79,8 @@ export class GameService {
       return null;
     }
 
-    // Seleccionar preguntas aleatorias
-    const selectedQuestions = this.shuffleArray([...allQuestions])
-      .slice(0, questionCount);
+    // Seleccionar preguntas (ya ordenadas por menor uso)
+    const selectedQuestions = availableQuestions.slice(0, questionCount);
 
     const gameSession: GameSession = {
       id: this.generateId(),
@@ -217,6 +222,7 @@ export class GameService {
       ...g,
       currentQuestionIndex: g.currentQuestionIndex + 1,
       errorsCount: 0, // Resetear errores para la nueva pregunta
+      consecutiveCorrect: 0, // Resetear racha entre preguntas
       perfectQuestions: wasPerfect ? g.perfectQuestions + 1 : g.perfectQuestions
     } : g);
 
@@ -228,6 +234,10 @@ export class GameService {
   endGame(): void {
     const game = this.currentGameSignal();
     if (!game) return;
+
+    // Marcar preguntas como usadas
+    const questionIds = game.questions.map(q => q.id);
+    this.dataService.markQuestionsAsUsed(questionIds);
 
     // Determinar ganador
     const sortedTeams = game.teams.sort((a, b) => (b.score || 0) - (a.score || 0));

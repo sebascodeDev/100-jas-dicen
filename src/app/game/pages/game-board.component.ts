@@ -6,11 +6,12 @@ import { GameService } from '../../shared/services/game.service';
 import { SoundService } from '../../shared/services/sound.service';
 import { SyncService } from '../../shared/services/sync.service';
 import { GameSession, Question, Answer } from '../../models/game.models';
+import { ExportButtonComponent } from '../../shared/components/export-button.component';
 
 @Component({
   selector: 'app-game-board',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ExportButtonComponent],
   template: `
     <div class="min-h-screen p-4">
       <!-- Mute Toggle -->
@@ -185,16 +186,22 @@ import { GameSession, Question, Answer } from '../../models/game.models';
               </div>
             </div>
 
-            <div class="flex gap-4 justify-center">
-              <button (click)="playAgain()" (mouseenter)="soundService.hover()" class="px-8 py-4 bg-primary text-white rounded-lg text-lg glow-pink">
-                🎮 Jugar de Nuevo
-              </button>
-              <a href="/game/rankings" (mouseenter)="soundService.hover()" class="px-8 py-4 bg-secondary text-white rounded-lg text-lg glow-cyan inline-block">
-                📊 Ver Rankings
-              </a>
-              <a href="/" (mouseenter)="soundService.hover()" class="px-8 py-4 bg-gray-700 text-white rounded-lg text-lg inline-block">
-                🏠 Ir al Inicio
-              </a>
+            <div class="flex flex-col gap-4 items-center">
+              <!-- Export Button -->
+              <app-export-button [gameSession]="game()"></app-export-button>
+
+              <!-- Action Buttons -->
+              <div class="flex gap-4 justify-center">
+                <button (click)="playAgain()" (mouseenter)="soundService.hover()" class="px-8 py-4 bg-primary text-white rounded-lg text-lg glow-pink">
+                  🎮 Jugar de Nuevo
+                </button>
+                <a href="/game/rankings" (mouseenter)="soundService.hover()" class="px-8 py-4 bg-secondary text-white rounded-lg text-lg glow-cyan inline-block">
+                  📊 Ver Rankings
+                </a>
+                <a href="/" (mouseenter)="soundService.hover()" class="px-8 py-4 bg-gray-700 text-white rounded-lg text-lg inline-block">
+                  🏠 Ir al Inicio
+                </a>
+              </div>
             </div>
           </div>
         }
@@ -247,6 +254,7 @@ export class GameBoardComponent implements OnInit {
       setTimeout(() => this.openPresenterWindow(), 500);
     }
   }
+
 
   toggleMute() {
     this.soundService.toggleMute();
