@@ -38,6 +38,10 @@ yarn-error.log
 testem.log
 /typings
 __screenshots__/
+preguntas-test.md
+
+# Banco de preguntas local (no versionar)
+/preguntas/
 
 # System files
 .DS_Store

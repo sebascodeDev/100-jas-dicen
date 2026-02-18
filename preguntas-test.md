@@ -1,9 +1,3 @@
-# Preguntas de Prueba - 100 JAS Dicen
-
-Este archivo contiene preguntas de ejemplo para testear el sistema.
-
----
-
 # ¿Cuál es la comida rápida más popular?
 
 - Pizza | 35
