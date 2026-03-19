@@ -126,13 +126,19 @@ import { Answer } from '../../models/game.models';
               <div>
                 <p class="text-sm text-gray-400">Errores</p>
                 <p class="text-2xl font-bold" [class]="getErrorsClass()">
-                  {{ game()?.errorsCount || 0 }} / {{ game()?.maxErrors || 3 }}
+                  @for (hasError of errorIndicators(); track $index) {
+                    @if (hasError) {
+                      <span>❌</span>
+                    } @else {
+                      <span class="text-gray-600">☐</span>
+                    }
+                  }
                 </p>
               </div>
               <div>
                 <p class="text-sm text-gray-400">Racha</p>
                 <p class="text-2xl font-bold text-yellow-400">
-                  {{ game()?.consecutiveCorrect || 0 }}
+                  {{ currentTeamConsecutive() }}
                   @if (getStreakBonus() > 0) {
                     <span class="text-sm">+{{ getStreakBonus() }}pts</span>
                   }
@@ -172,6 +178,32 @@ export class PresenterControlComponent {
   currentQuestion = computed(() => this.gameService.getCurrentQuestion());
   currentTeamIndex = computed(() => this.syncService.state().currentTeamIndex);
 
+  currentTeamId = computed(() => {
+    const game = this.game();
+    const index = this.currentTeamIndex();
+    return game?.teams[index]?.id || '';
+  });
+
+  currentTeamErrors = computed(() => {
+    const game = this.game();
+    const teamId = this.currentTeamId();
+    if (!game || !teamId) return 0;
+    return game.teamErrorsCount[teamId] || 0;
+  });
+
+  currentTeamConsecutive = computed(() => {
+    const game = this.game();
+    const teamId = this.currentTeamId();
+    if (!game || !teamId) return 0;
+    return game.teamConsecutiveCorrect[teamId] || 0;
+  });
+
+  errorIndicators = computed(() => {
+    const errors = this.currentTeamErrors();
+    const maxErrors = this.game()?.maxErrors || 3;
+    return Array.from({ length: maxErrors }, (_, i) => i < errors);
+  });
+
   // Control de visibilidad de textos de respuestas (por defecto ocultos)
   showAnswersText = signal(false);
 
@@ -198,8 +230,12 @@ export class PresenterControlComponent {
   toggleAnswer(answer: Answer) {
     // Solo procesar si NO está revelada
     if (!this.isRevealed(answer)) {
+      // Obtener equipo actual
+      const currentTeam = this.game()?.teams[this.currentTeamIndex()];
+      if (!currentTeam) return;
+
       // Registrar respuesta correcta para bonus de racha
-      this.gameService.registerCorrectAnswer();
+      this.gameService.registerCorrectAnswer(currentTeam.id);
 
       // Reproducir sonido de respuesta correcta
       this.soundService.correctAnswer();
@@ -207,31 +243,19 @@ export class PresenterControlComponent {
       // Revelar la respuesta
       this.syncService.revealAnswer(answer.id);
 
-      // Obtener equipo actual
-      const currentTeam = this.game()?.teams[this.currentTeamIndex()];
-      if (currentTeam) {
-        // Calcular bonus por racha
-        const consecutiveCorrect = this.game()?.consecutiveCorrect || 0;
-        const bonus = this.calculateStreakBonus(consecutiveCorrect);
-        const totalPoints = answer.points + bonus;
+      // Calcular bonus por racha
+      const bonus = this.gameService.calculateStreakBonus(currentTeam.id);
+      const totalPoints = answer.points + bonus;
 
-        // Agregar puntos al equipo actual
-        this.gameService.addPoints(currentTeam.id, totalPoints);
-        this.soundService.addPoints();
+      // Agregar puntos al equipo actual
+      this.gameService.addPoints(currentTeam.id, totalPoints);
+      this.soundService.addPoints();
 
-        // Reproducir sonido de bonus si hay
-        if (bonus > 0) {
-          this.soundService.addBonus();
-        }
+      // Reproducir sonido de bonus si hay
+      if (bonus > 0) {
+        this.soundService.addBonus();
       }
     }
-  }
-
-  calculateStreakBonus(consecutiveCorrect: number): number {
-    if (consecutiveCorrect >= 5) return 20;
-    if (consecutiveCorrect >= 3) return 10;
-    if (consecutiveCorrect >= 2) return 5;
-    return 0;
   }
 
   revealAll() {
@@ -256,16 +280,37 @@ export class PresenterControlComponent {
     this.syncService.setCurrentTeam(index);
   }
 
+  nextTeam() {
+    const teamCount = this.game()?.teams.length || 0;
+    const newIndex = (this.currentTeamIndex() + 1) % teamCount;
+    const newTeam = this.game()?.teams[newIndex];
+
+    // Reiniciar errores del nuevo equipo
+    if (newTeam) {
+      this.gameService.resetTeamErrors(newTeam.id);
+    }
+
+    this.setCurrentTeam(newIndex);
+  }
+
   getErrorsClass(): string {
-    const errors = this.game()?.errorsCount || 0;
-    const maxErrors = this.game()?.maxErrors || 3;
+    const game = this.game();
+    const teamId = this.currentTeamId();
+    if (!game || !teamId) return 'text-green-400';
+
+    const errors = game.teamErrorsCount[teamId] || 0;
+    const maxErrors = game.maxErrors || 3;
     if (errors === 0) return 'text-green-400';
     if (errors >= maxErrors - 1) return 'text-red-400 animate-pulse';
     return 'text-yellow-400';
   }
 
   getStreakBonus(): number {
-    const consecutive = this.game()?.consecutiveCorrect || 0;
+    const game = this.game();
+    const teamId = this.currentTeamId();
+    if (!game || !teamId) return 0;
+
+    const consecutive = game.teamConsecutiveCorrect[teamId] || 0;
     if (consecutive >= 5) return 20;
     if (consecutive >= 3) return 10;
     if (consecutive >= 2) return 5;
@@ -273,25 +318,28 @@ export class PresenterControlComponent {
   }
 
   registerIncorrectAnswer() {
+    // Obtener equipo actual
+    const currentTeam = this.game()?.teams[this.currentTeamIndex()];
+    if (!currentTeam) return;
+
     // Registrar error y verificar si se alcanzó el máximo
-    const maxErrorsReached = this.gameService.registerError();
-    const penalty = this.gameService.getErrorPenalty();
+    const maxErrorsReached = this.gameService.registerError(currentTeam.id);
+    const penalty = this.gameService.getErrorPenalty(currentTeam.id);
 
     // Aplicar penalización al equipo actual
-    const currentTeam = this.game()?.teams[this.currentTeamIndex()];
-    if (currentTeam && penalty > 0) {
+    if (penalty > 0) {
       this.gameService.addPoints(currentTeam.id, -penalty);
     }
 
     // Reproducir sonido de respuesta incorrecta
     this.soundService.incorrectAnswer();
 
-    // Si se alcanzó el máximo de errores, avanzar a siguiente pregunta
+    // Si se alcanzó el máximo de errores, reproducir sonido y avanzar a siguiente equipo
     if (maxErrorsReached) {
+      this.soundService.maxErrors();
       setTimeout(() => {
-        this.soundService.maxErrors();
-        this.nextQuestion();
-      }, 1500);
+        this.nextTeam();
+      }, 1800);
     }
   }
 

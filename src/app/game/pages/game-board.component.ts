@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, effect } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -54,13 +54,19 @@ import { ExportButtonComponent } from '../../shared/components/export-button.com
                 <div class="text-center">
                   <p class="text-sm text-gray-400">Errores</p>
                   <p class="text-2xl font-bold" [class]="getErrorsClass()">
-                    {{ game()?.errorsCount || 0 }} / {{ game()?.maxErrors || 3 }}
+                    @for (hasError of errorIndicators(); track $index) {
+                      @if (hasError) {
+                        <span>❌</span>
+                      } @else {
+                        <span class="text-gray-600">☐</span>
+                      }
+                    }
                   </p>
                 </div>
                 <div class="text-center">
                   <p class="text-sm text-gray-400">Racha Actual</p>
                   <p class="text-2xl font-bold text-accent">
-                    {{ game()?.consecutiveCorrect || 0 }}
+                    {{ currentTeamStreak() }}
                     @if (getStreakBonus() > 0) {
                       <span class="text-sm text-yellow-400">+{{ getStreakBonus() }}pts</span>
                     }
@@ -215,8 +221,52 @@ import { ExportButtonComponent } from '../../shared/components/export-button.com
           </a>
         </div>
       }
+
+      <!-- Modal de Máximo de Errores -->
+      @if (showMaxErrorsModal()) {
+        <div class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 animate-fade-in">
+          <div class="bg-red-600 rounded-lg p-6 text-center max-w-sm animate-scale-in shadow-2xl border-2 border-red-400">
+            <div class="text-5xl mb-3">❌</div>
+            <h2 class="text-2xl font-bold text-white">¡Se equivocó!</h2>
+            <p class="text-red-100 mt-2">3 errores alcanzados</p>
+          </div>
+        </div>
+      }
+
+      <!-- Modal de Cambio de Equipo -->
+      @if (showTeamChangeModal()) {
+        <div class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 animate-fade-in">
+          <div class="bg-gradient-to-b from-blue-600 to-blue-700 rounded-lg p-6 text-center max-w-sm animate-scale-in shadow-2xl border-2 border-blue-400">
+            <div class="text-5xl mb-3">▶️</div>
+            <h2 class="text-xl font-bold text-white">Turno del equipo:</h2>
+            <p class="text-blue-100 text-2xl font-bold mt-2">{{ modalTeamName() }}</p>
+          </div>
+        </div>
+      }
     </div>
-  `
+  `,
+  styles: [`
+    @keyframes fade-in {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes scale-in {
+      from {
+        transform: scale(0.7);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+    .animate-fade-in {
+      animation: fade-in 0.2s ease-in-out;
+    }
+    .animate-scale-in {
+      animation: scale-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+  `]
 })
 export class GameBoardComponent implements OnInit {
   gameService = inject(GameService);
@@ -233,10 +283,91 @@ export class GameBoardComponent implements OnInit {
   totalQuestions = computed(() => this.game()?.questions.length || 0);
   winner = computed(() => this.gameService.getWinner());
 
+  currentTeamId = computed(() => {
+    const game = this.game();
+    const index = this.currentTeamIndex();
+    return game?.teams[index]?.id || '';
+  });
+
+  currentTeamErrors = computed(() => {
+    const game = this.game();
+    const teamId = this.currentTeamId();
+    if (!game || !teamId) return 0;
+    return game.teamErrorsCount[teamId] || 0;
+  });
+
+  errorIndicators = computed(() => {
+    const errors = this.currentTeamErrors();
+    const maxErrors = this.game()?.maxErrors || 3;
+    return Array.from({ length: maxErrors }, (_, i) => i < errors);
+  });
+
+  currentTeamStreak = computed(() => {
+    const game = this.game();
+    const teamId = this.currentTeamId();
+    if (!game || !teamId) return 0;
+    return game.teamConsecutiveCorrect[teamId] || 0;
+  });
+
+  currentTeam = computed(() => {
+    const game = this.game();
+    const index = this.currentTeamIndex();
+    return game?.teams[index];
+  });
+
   sortedTeams = computed(() => {
     const teams = this.game()?.teams || [];
     return [...teams].sort((a, b) => (b.score || 0) - (a.score || 0));
   });
+
+  // Modales
+  showMaxErrorsModal = signal(false);
+  showTeamChangeModal = signal(false);
+  modalTeamName = signal('');
+  previousTeamIndex = signal(0);
+  lastErroredTeamId = signal(''); // Track el último equipo con error máximo
+
+  constructor() {
+    // Monitorear cambios de pregunta para resetear el flag de error
+    effect(() => {
+      const questionIndex = this.game()?.currentQuestionIndex;
+      this.lastErroredTeamId.set(''); // Resetear cuando cambia la pregunta
+    });
+
+    // Monitorear cambios de equipo
+    effect(() => {
+      const currentIndex = this.currentTeamIndex();
+      const previousIndex = this.previousTeamIndex();
+
+      if (currentIndex !== previousIndex && this.game()?.status === 'playing') {
+        const newTeamName = this.game()?.teams[currentIndex]?.name || '';
+        this.modalTeamName.set(newTeamName);
+        this.showTeamChangeModal.set(true);
+
+        setTimeout(() => {
+          this.showTeamChangeModal.set(false);
+        }, 1200);
+
+        this.previousTeamIndex.set(currentIndex);
+      }
+    });
+
+    // Monitorear máximo de errores
+    effect(() => {
+      const errors = this.currentTeamErrors();
+      const maxErrors = this.game()?.maxErrors || 3;
+      const teamId = this.currentTeamId();
+
+      // Solo mostrar modal si: hay errores máximos, no está abierto el modal, y no es el mismo equipo que ya mostró
+      if (errors >= maxErrors && !this.showMaxErrorsModal() && teamId !== this.lastErroredTeamId()) {
+        this.showMaxErrorsModal.set(true);
+        this.lastErroredTeamId.set(teamId);
+        setTimeout(() => {
+          this.showMaxErrorsModal.set(false);
+        }, 1800);
+      }
+    });
+  }
 
   ngOnInit() {
     if (!this.game()) {
@@ -261,7 +392,7 @@ export class GameBoardComponent implements OnInit {
   }
 
   getErrorsClass(): string {
-    const errors = this.game()?.errorsCount || 0;
+    const errors = this.currentTeamErrors();
     const maxErrors = this.game()?.maxErrors || 3;
     if (errors === 0) return 'text-green-400';
     if (errors >= maxErrors - 1) return 'text-red-400 animate-pulse';
@@ -269,7 +400,10 @@ export class GameBoardComponent implements OnInit {
   }
 
   getStreakBonus(): number {
-    const consecutive = this.game()?.consecutiveCorrect || 0;
+    const game = this.game();
+    const teamId = this.currentTeamId();
+    if (!game || !teamId) return 0;
+    const consecutive = game.teamConsecutiveCorrect[teamId] || 0;
     if (consecutive >= 5) return 20;
     if (consecutive >= 3) return 10;
     if (consecutive >= 2) return 5;
