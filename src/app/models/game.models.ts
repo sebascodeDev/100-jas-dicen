@@ -34,9 +34,9 @@ export interface GameSession {
   status: 'lobby' | 'playing' | 'finished';
   startedAt?: Date;
   endedAt?: Date;
-  errorsCount: number; // Errores en la pregunta actual
-  maxErrors: number; // Máximo de errores permitidos por pregunta
-  consecutiveCorrect: number; // Racha de respuestas correctas
+  teamErrorsCount: { [teamId: string]: number }; // Errores por equipo en la pregunta actual
+  maxErrors: number; // Máximo de errores permitidos por equipo por pregunta
+  teamConsecutiveCorrect: { [teamId: string]: number }; // Racha de respuestas correctas por equipo
   perfectQuestions: number; // Preguntas completadas sin errores
 }
 
